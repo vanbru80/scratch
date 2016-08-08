@@ -8,37 +8,25 @@ using namespace std;
 
 typedef set<int> RlistT;
 
-bool getNextQuery(vector<int> &input)
+void getNextQuery(vector<int> &input)
 {
-    string q;
+   std::string str;
+   cin >> str;
 
-    if (!(cin >> q)) return false;
+   // work
+   std::istringstream split(str);
+   std::vector<std::string> tokens;
 
-    int i = 0, start = 0, val = 0;
-
-    stringstream s1;
-    while (++i < q.size() && q[i] != '-');
-    s1 << q.substr(start, i);
-    s1 >> val;
-    input.push_back(val);
-
-    start = i+1;
-    stringstream s2;
-    while (++i < q.size() && q[i] != '-');
-    s2 << q.substr(start, i);
-    s2 >> val;
-    input.push_back(val);
-    
-    if (i >= q.size()) return true;
-
-    start = i+1;
-    stringstream s3;
-    while (++i < q.size() && q[i] != '-');
-    s3 << q.substr(start, i);
-    s3 >> val;
-    input.push_back(val);
-
-    return true;
+   for (std::string each
+        ; std::getline(split, each, '-')
+        ; )
+   {
+       stringstream strm;
+       strm << each;
+       int d;
+       strm >> d;
+       input.push_back(d);
+   }
 }
 
 void doit()
@@ -57,8 +45,12 @@ void doit()
     }
 
     vector<int> input;
-    while (getNextQuery(input))
+    while (1)
     {
+        input.clear();
+        getNextQuery(input);
+        if (input.empty()) return;
+
         if (input.size() == 2)
         {
             int ts = input[0]-1, ns = input[1];
@@ -92,6 +84,8 @@ void doit()
                 
                 cout << endl;
             }
+            else
+                cout << "None" <<endl;
 
         }
         else
@@ -120,8 +114,6 @@ void doit()
             else
                 cout << "N" << endl;
         }
-
-        input.clear();
     }
 }
 
