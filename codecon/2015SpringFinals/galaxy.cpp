@@ -10,13 +10,16 @@
 
 using namespace std;
 
+typedef set<string> SetT;
+
 class cell
 {
     public :
         string name;
         int x, y, z;
         double r;
-        vector<cell> nlist;
+        vector<string> nlist;
+        SetT path;
 
         bool operator == (const cell &c) const
         {
@@ -27,7 +30,7 @@ class cell
         {
             if (dist(c) <= r)
             {
-                nlist.push_back(c);
+                nlist.push_back(c.name);
             }
         }
 
@@ -39,55 +42,54 @@ class cell
 
 void print(const cell &c)
 {
-    cout << c.name << ","<<c.x<<","<<c.y<<","<<c.z<<","<<c.r<<endl;
+    cout << c.name << ","<<c.x<<","<<c.y<<","<<c.z<<","<<c.r;
+    for (int i = 0; i < c.nlist.size(); ++i)
+        cout << "," << c.nlist[i];
+    cout <<endl;
 }
 
-struct lessThan
-{
-    bool operator ()(const cell &c1, const cell &c2) const
-    {
-        return (c1.name < c2.name);
-    }
-};
+typedef map <string, cell> MapT;
 
-vector <cell> p;
+MapT p;
 
 cell src, dest;
-
-typedef set<cell, lessThan> SetT;
 
 SetT vis;
 typedef pair<int, SetT> PairT;
 
-PairT traverse(const cell &curr)
+void traverse(cell &curr)
 {
-    PairT max;
-    max.first = 0;
-
-    if (curr.nlist.empty()) {
-        max.first = 1; max.second.insert(curr);
-        return max;
+    if (curr.nlist.empty()
+        || !curr.path.empty()) {
+        return;
     }
 
+    MapT::iterator maxiter = p.end();
     for (int i = 0; i < curr.nlist.size(); ++i)
     {
-        if (curr.name == curr.nlist[i].name) continue;
-
-        if (vis.find(curr) != vis.end())
+        if (vis.find(curr.nlist[i]) != vis.end())
             continue;
 
         vis.insert(curr.nlist[i]);
 
-        PairT tmp = traverse(curr.nlist[i]);
-        if (max.first < tmp.first) max = tmp;
+        MapT::iterator iter = p.find(curr.nlist[i]);
+
+        traverse(iter->second);
+
+        if (maxiter == p.end() 
+            || maxiter->second.path.size() < iter->second.path.size())
+        {
+            maxiter = iter;
+        }
 
         vis.erase(curr.nlist[i]);
     }
 
-    max.first++; max.second.insert(curr);
-
-    cout << curr.name <<","<<max.first<<endl;
-    return max;
+    if (maxiter != p.end())
+    {
+    curr.path = maxiter->second.path;
+    curr.path.insert(maxiter->first);
+    }
 }
 
 enum {X=0, Y, Z, R, N};
@@ -119,35 +121,41 @@ int main()
         tmp.r = atof(out[R].c_str()); 
         tmp.name = out[N];
 
-        p.push_back(tmp);
+        p.insert(make_pair(tmp.name, tmp));
     }
 
-    for (int i = 0; i < p.size(); ++i)
+    for (MapT::iterator it = p.begin(); it != p.end(); ++it)
     {
-        for (int j = 0;  j < p.size(); ++j)
+        for (MapT::iterator jt = p.begin(); jt != p.end(); ++jt)
         {
-            if (i != j) p[i].insert(p[j]);
+            if (it->first != jt->first) it->second.insert(jt->second);
         }
     }
 
-    PairT max;
-    max.first = 0;
+    SetT max;
 
-    for (int i = 0; i < p.size(); ++i)
+    for (MapT::iterator it = p.begin(); it != p.end(); ++it)
     {
+        for (MapT::iterator iter = p.begin(); iter != p.end(); ++iter)
+        {
+            iter->second.path.clear();
+        }
+
         vis.clear();
 
-        vis.insert(p[i]);
-        PairT tmp = traverse(p[i]);
+        vis.insert(it->first);
+        traverse(it->second);
+        it->second.path.insert(it->first);
 
-        if (max.first < tmp.first) max = tmp;
+        if (max.size() < it->second.path.size())
+            max = it->second.path;
     }
 
-    for (SetT::iterator iter = max.second.begin(); iter != max.second.end(); ++iter)
+    for (SetT::iterator iter = max.begin(); iter != max.end(); ++iter)
     {
-        if (iter != max.second.begin()) cout << ",";
+        if (iter != max.begin()) cout << ",";
 
-        cout << iter->name;
+        cout << *iter;
     }
 
     return 0;
