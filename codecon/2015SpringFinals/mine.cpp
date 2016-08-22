@@ -3,153 +3,102 @@
 #include <vector>
 #include <map>
 #include <set>
-#include <stdlib.h>
 #include <algorithm>
-#include <unordered_map>
+//#include <unordered_map>
 #include <cmath>
 
 using namespace std;
 
 long long row, col;
 
-typedef map<long long, int> MapT;
-typedef pair<long long, string> PairT;
+typedef pair<long long, vector<string> > PairT;
 
 vector< vector<long long> > grid;
-vector< vector<long long> > out;
-vector< vector<PairT> > v;
+
+PairT ZERO;
 
 PairT solve(long long n, long long c)
 {
-    if (v[n][c-1].first != -1) return v[n][c-1];
+    if (n < 0) return ZERO;
 
-    //PairT res = make_pair(0, "");
-    if (c == 1) { 
-        if (n <= 9 && n >= 0) {
-            v[n][c-1].first = 1;
-            v[n][c-1].second = std::string(1, '0'+n);
-        }
-        else {
-            v[n][c-1].first = 0;
-        }
-#if 0
-        if (n <= 9) {
-            res.first = 1;
-            res.second = std::string(1, '0'+n);
-        }
-#endif
-    }
-    else
+    vector<PairT> v;
+    v.resize(n+1, ZERO);
+
+    for (long long i = 0; i <= n; ++i)
     {
-        for (long long i = 0; i <= 9; ++i)
+        if (i <= 9)
+            v[i].first = 1;
+    }
+
+    for (long long i = 1; i < c; ++i)
+    {
+        for (long long j = n; j >= 0; --j)
         {
-            if (n >= i)
-            {
-                PairT val = solve(n-i, c-1);
-                if (val.first > 0)
-                {
-                    if (v[n][c-1].first == -1)
-                        v[n][c-1].first = val.first;
-                    else
-                        v[n][c-1].first += val.first;
-                    if (v[n][c-1].second.empty())
-                    {
-                        v[n][c-1].second = std::string(1, '0'+i) + val.second;
-                    }
-                    //res.first += val.first;
-                    //res.second = std::string(1, '0'+i) + val.second;
-                }
-            }
+            for (long long k = 1; k <= 9; ++k)
+                if (j >= k)
+                    v[j].first += v[j-k].first;
         }
     }
 
-    return v[n][c-1];
-    //return res;
+    if (v[n].first == 1)
+    {
+        if (c == 1)
+            v[n].second.push_back(std::string(1, '0'+n));
+        else if (n == 0)
+            v[n].second.push_back(std::string(c, '0'));
+        else
+            v[n].second.push_back(std::string(c, '9'));
+    }
+
+    return v[n];
 }
 
-void perm()
+PairT perm()
 {
-    long long first = -1, second = -1, c = 0;
-
-    MapT cmap;
+    long long n = grid[0][0];
+    long long c = row*col;
 
     for (long long i = 0; i < row; ++i)
     {
         for (long long j = 0; j < col; ++j)
         {
-            ++c;
-            MapT::iterator iter = cmap.find(grid[i][j]);
-            if (iter != cmap.end())
-                (iter->second)++;
-            else
-                cmap.insert(make_pair(grid[i][j], 1));
+            if (n != grid[i][j])
+                return ZERO;
         }
     }
 
-    bool ret = false;
-    if (cmap.size() == 2)
-    {
-        MapT::iterator it1 = cmap.begin();
-        MapT::iterator it2 = it1;
-        it2++;
-
-        ret = ((abs((it1->first)-(it2->first)) == 1)
-                && (it1->second == c-1 || it2->second == c-1));
-        if (it1->second == c-1)
-        {
-            first = it1->first;
-            if (c == 2)
-            second = it2->first;
-        }
-        else
-        {
-            first = it2->first;
-            if (c == 2)
-            second = it1->first;
-        }
-
-    }
-    else if (c == 1) 
-    {
-        ret = true;
-        first = grid[0][0]+1;
-        if (first >= 0 && first <= 9)
-            second = grid[0][0]-1;
-        else
-            first = grid[0][0]-1;
-    }
-
-    if (!ret)
-    {
-        cout << "0 SOLUTIONS";
-        return;
-    }
-
-    int n = max(first+1, second+1);
-    v.resize(n);
-    for (long long i = 0; i < n; ++i) 
-        v[i].resize(c, make_pair(-1, ""));
-
-    PairT res = solve(first, c);
-    if (second != -1)
-    {
-        PairT res2 = solve(second, c);
-        if (res2.first > 0)
-        {
-            if (res.first == 0)
-                res = res2;
-            else
-                res.first = res.first + res2.first;
-        }
-    }
-
-    if (res.first == 1)
-        cout << res.second;
-    else
-        cout << (res.first)%10007 <<" SOLUTIONS";
+    return solve(n, c);
 }
 
-void computeGrid()
+bool findBad(long long &bi, long long &bj)
+{
+    for (long long i = 0; i < row; ++i)
+    {
+        for (long long j = 0; j < col; ++j)
+        {
+            long long srow = 0, scol = 0;
+            for (long long r = 0; r < row; ++r)
+            {
+                for (long long c = 0; c < col; ++c)
+                {
+                    if (r == i)
+                        srow += grid[r][c];
+                    if (c == j)
+                        scol += grid[r][c];
+                }
+            }
+
+            if (srow%(row-1) != 0 && scol%(col-1) != 0)
+            {
+                bi = i; bj = j;
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+bool fixGrid()
 {
     long long sum = 0;
     for (long long i = 0; i < row; ++i)
@@ -160,57 +109,158 @@ void computeGrid()
         }
     }
 
-    long long offset = -1;
-    if ((sum+1)%(row+col-1) == 0) 
+    if (((sum+1)%(row+col-1) != 0)
+        && ((sum-1)%(row+col-1) != 0))
     {
-        sum = (sum+1)/(row+col-1);
-        offset = 1;
+        return false;
     }
-    else if ((sum-1)%(row+col-1) == 0) 
-        sum = (sum-1)/(row+col-1);
-    else
-    {
-        cout << "0 SOLUTIONS" <<endl;
-        return;
-    }
+
+    sum = (sum+1)/(row+col-1);
 
     for (long long i = 0; i < row; ++i)
     {
         for (long long j = 0; j < col; ++j)
         {
-            long long tmp = 0;
+            long long srow = 0, scol = 0;
             for (long long r = 0; r < row; ++r)
             {
                 for (long long c = 0; c < col; ++c)
                 {
-                    if (r == i || c == j)
-                        tmp += grid[r][c];
+                    if (r == i)
+                        srow += grid[r][c];
+                    if (c == j)
+                        scol += grid[r][c];
                 }
             }
 
-            tmp += grid[i][j];
-
-            if (tmp%2 != 0) tmp = tmp + offset;
-
-            out[i][j] = (tmp/2) - (sum + grid[i][j]);
-
-            if (out[i][j] < 0 || out[i][j] > 9)
+            if (((srow-sum)%(row-1) != 0)
+                && ((scol-sum)%(col-1) != 0))
             {
-                cout << "0 SOLUTIONS" <<endl;
-                return;
+                if ((srow-sum-1)%(row-1) != 0)
+                    grid[i][j] -= 1;
+                else
+                    grid[i][j] += 1;
+                return true;
             }
         }
     }
 
+    return false;
+}
+
+PairT computeGrid()
+{
+    PairT res(ZERO);
+
+    long long sum = 0;
     for (long long i = 0; i < row; ++i)
     {
         for (long long j = 0; j < col; ++j)
         {
-            cout <<out[i][j];
+            sum += grid[i][j];
         }
-        cout<<endl;
     }
 
+    if ((sum%(row+col-1)) != 0)
+    {
+        return ZERO;
+    }
+
+    sum = sum/(row+col-1);
+
+    for (long long i = 0; i < row; ++i)
+    {
+        res.second.push_back("");
+        for (long long j = 0; j < col; ++j)
+        {
+            long long srow = 0, scol = 0;
+            for (long long r = 0; r < row; ++r)
+            {
+                for (long long c = 0; c < col; ++c)
+                {
+                    if (r == i)
+                        srow += grid[r][c];
+                    if (c == j)
+                        scol += grid[r][c];
+                }
+            }
+
+            if (((srow-sum)%(row-1) != 0)
+                || ((scol-sum)%(col-1) != 0))
+            {
+                return ZERO;
+            }
+
+            srow = (srow-sum)/(row-1);
+            scol = (scol-sum)/(col-1);
+
+            long long val = (srow+scol)-grid[i][j];
+
+            if (val < 0 || val > 9)
+            {
+                return ZERO;
+            }
+
+            res.second[i].push_back('0'+val);
+        }
+    }
+
+    res.first = 1;
+    return res;
+}
+
+PairT solveGrid()
+{
+    if (row == 1 || col == 1)
+        return perm();
+    else
+        return computeGrid();
+}
+
+void run()
+{
+    PairT res(ZERO);
+    long long shift[2] = {-1, 1};
+
+    long long r = -1, c = -1;
+    if (row > 2 && col > 2)
+    {
+        if (fixGrid())
+        {
+            res = solveGrid();
+        }
+    }
+    else
+    {
+        for (long long i = 0; i < row; ++i)
+        {
+            for (long long j = 0; j < col; ++j)
+            {
+                if (r != -1 && c != -1 && i != r && c != j)
+                    continue;
+
+                for (long long k = 0; k < 2; ++k)
+                {
+                    grid[i][j] += shift[k];
+
+                    PairT tmp = solveGrid();
+                    res.first += tmp.first;
+                    if (res.second.empty())
+                        res.second = tmp.second;
+
+                    grid[i][j] -= shift[k];
+                }
+            }
+        }
+    }
+
+    if (res.first == 1)
+    {
+        for (long long i = 0; i < res.second.size(); ++i)
+            cout<<res.second[i]<<endl;
+    }
+    else
+        cout << (res.first)%10007 <<" SOLUTIONS";
 }
 
 int main()
@@ -218,20 +268,19 @@ int main()
     cin >> row >> col;
 
     grid.resize(row);
-    out.resize(row);
 
     for (long long i = 0; i < row; ++i)
     {
         grid[i].resize(col);
-        out[i].resize(col);
         for (long long j = 0; j < col; ++j)
         {
             cin >> grid[i][j];
         }
     }
 
-#if 0
+    ZERO.first = 0;
 
+#if 0
     if (row == 1 && col == 1)
     {
         if (grid[0][0] == 0)
@@ -242,18 +291,11 @@ int main()
             cout << "2 SOLUTIONS";
         else
             cout << "0 SOLUTIONS";
-
         return 0;
     }
 #endif
 
-    if (row == 1 || col == 1)
-    {
-        perm();
-        return 0;
-    }
-
-    computeGrid();
+    run();
 
     return 0;
 }
