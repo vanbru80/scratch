@@ -28,8 +28,10 @@ void print()
     {
         for (ll j = 0; j < m; ++j)
         {
+            std::ios::sync_with_stdio(false);
             cout << v[i][j] << " ";
         }
+        std::ios::sync_with_stdio(false);
         cout << endl;
     }
 }
@@ -46,6 +48,7 @@ int main()
         v[i].resize(m,0);
         for (ll j = 0; j < m; ++j)
         {
+            std::ios::sync_with_stdio(false);
             cin >> v[i][j];
         }
     }
@@ -53,6 +56,7 @@ int main()
     for (ll k = 0; k < q; ++k)
     {
         ll a, b, c, d, h, w;
+        std::ios::sync_with_stdio(false);
         cin >> a >> b >> c >> d >> h >> w;
 
         for (ll i = 0; i < h; ++i)

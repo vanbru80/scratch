@@ -17,6 +17,20 @@ vector< vector<long long> > grid;
 
 PairT ZERO;
 
+void print()
+{
+    for (long long i = 0; i < row; ++i)
+    {
+        for (long long j = 0; j < col; ++j)
+        {
+            cout << grid[i][j] << " ";
+        }
+        cout << endl;
+    }
+
+    return;
+}
+
 PairT solve(long long n, long long c)
 {
     if (n < 0) return ZERO;
@@ -72,34 +86,6 @@ PairT perm()
 
 bool findBad(long long &bi, long long &bj)
 {
-    for (long long i = 0; i < row; ++i)
-    {
-        for (long long j = 0; j < col; ++j)
-        {
-            long long srow = 0, scol = 0;
-            for (long long r = 0; r < row; ++r)
-            {
-                for (long long c = 0; c < col; ++c)
-                {
-                    if (r == i)
-                        srow += grid[r][c];
-                    if (c == j)
-                        scol += grid[r][c];
-                }
-            }
-
-            if (srow%(row-1) != 0 && scol%(col-1) != 0)
-            {
-                bi = i; bj = j;
-                return true;
-            }
-        }
-    }
-    return false;
-}
-
-bool fixGrid()
-{
     long long sum = 0;
     for (long long i = 0; i < row; ++i)
     {
@@ -136,10 +122,7 @@ bool fixGrid()
             if (((srow-sum)%(row-1) != 0)
                 && ((scol-sum)%(col-1) != 0))
             {
-                if ((srow-sum-1)%(row-1) != 0)
-                    grid[i][j] -= 1;
-                else
-                    grid[i][j] += 1;
+                bi = i; bj = j;
                 return true;
             }
         }
@@ -222,15 +205,14 @@ void run()
     PairT res(ZERO);
     long long shift[2] = {-1, 1};
 
+    bool doit = true;
     long long r = -1, c = -1;
     if (row > 2 && col > 2)
     {
-        if (fixGrid())
-        {
-            res = solveGrid();
-        }
+        doit = findBad(r, c);
     }
-    else
+
+    if (doit)
     {
         for (long long i = 0; i < row; ++i)
         {
