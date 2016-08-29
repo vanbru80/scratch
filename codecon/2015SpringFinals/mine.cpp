@@ -218,7 +218,7 @@ void run()
         {
             for (long long j = 0; j < col; ++j)
             {
-                if (r != -1 && c != -1 && i != r && c != j)
+                if (r != -1 && c != -1 && (i != r || c != j))
                     continue;
 
                 for (long long k = 0; k < 2; ++k)
