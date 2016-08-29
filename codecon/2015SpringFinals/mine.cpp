@@ -119,8 +119,8 @@ bool findBad(long long &bi, long long &bj)
                 }
             }
 
-            if (((srow-sum)%(row-1) != 0)
-                && ((scol-sum)%(col-1) != 0))
+            if (((srow-sum)%(col-1) != 0)
+                && ((scol-sum)%(row-1) != 0))
             {
                 bi = i; bj = j;
                 return true;
@@ -168,14 +168,14 @@ PairT computeGrid()
                 }
             }
 
-            if (((srow-sum)%(row-1) != 0)
-                || ((scol-sum)%(col-1) != 0))
+            if (((srow-sum)%(col-1) != 0)
+                || ((scol-sum)%(row-1) != 0))
             {
                 return ZERO;
             }
 
-            srow = (srow-sum)/(row-1);
-            scol = (scol-sum)/(col-1);
+            srow = (srow-sum)/(col-1);
+            scol = (scol-sum)/(row-1);
 
             long long val = (srow+scol)-grid[i][j];
 
@@ -261,21 +261,6 @@ int main()
     }
 
     ZERO.first = 0;
-
-#if 0
-    if (row == 1 && col == 1)
-    {
-        if (grid[0][0] == 0)
-            cout << "1";
-        else if (grid[0][0] == 9)
-            cout << "8";
-        else if (grid[0][0] >= 0 && grid[0][0] <= 8)
-            cout << "2 SOLUTIONS";
-        else
-            cout << "0 SOLUTIONS";
-        return 0;
-    }
-#endif
 
     run();
 
