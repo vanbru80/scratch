@@ -58,10 +58,16 @@ PairT solve(long long n, long long c)
     {
         if (c == 1)
             v[n].second.push_back(std::string(1, '0'+n));
-        else if (n == 0)
-            v[n].second.push_back(std::string(c, '0'));
-        else
-            v[n].second.push_back(std::string(c, '9'));
+        else 
+        {
+            for (long long i = 0; i < row; ++i)
+            {
+                if (n == 0)
+                    v[n].second.push_back(std::string(col, '0'));
+                else
+                    v[n].second.push_back(std::string(col, '9'));
+            }
+        }
     }
 
     return v[n];
@@ -207,11 +213,13 @@ void run()
 
     bool doit = true;
     long long r = -1, c = -1;
+#if 0
     if (row > 2 && col > 2)
     {
         doit = findBad(r, c);
     }
 
+#endif
     if (doit)
     {
         for (long long i = 0; i < row; ++i)
@@ -227,7 +235,7 @@ void run()
 
                     PairT tmp = solveGrid();
                     res.first += tmp.first;
-                    if (res.second.empty())
+                    if (tmp.first > 0 && res.second.empty())
                         res.second = tmp.second;
 
                     grid[i][j] -= shift[k];
